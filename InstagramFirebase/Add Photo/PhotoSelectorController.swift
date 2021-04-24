@@ -39,8 +39,6 @@ class PhotoSelectorController: UICollectionViewController, UICollectionViewDeleg
     }
     
     fileprivate func fetchPhotos(){
-        
-        
         let allPhotos = PHAsset.fetchAssets(with: .image, options: assetsFetchOptions())
         
         DispatchQueue.global(qos: .background).async {
@@ -78,9 +76,15 @@ class PhotoSelectorController: UICollectionViewController, UICollectionViewDeleg
         return CGSize(width: width, height: width)
     }
     
+    var header: PhotoSelectorHeader?
+    
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         
+        
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerId, for: indexPath) as! PhotoSelectorHeader
+        
+        self.header = header
+        
         header.photoImageView.image = selectedImage
         
         if let selectedImage = selectedImage {
@@ -90,7 +94,7 @@ class PhotoSelectorController: UICollectionViewController, UICollectionViewDeleg
                 let imageManager = PHImageManager.default()
                 let targetSize = CGSize(width: 800, height: 800)
                 imageManager.requestImage(for: selectedAsset, targetSize: targetSize, contentMode: .aspectFit, options: nil) { (image, info) in
-                        
+                    
                     header.photoImageView.image = image
                 }
             }
@@ -127,8 +131,12 @@ class PhotoSelectorController: UICollectionViewController, UICollectionViewDeleg
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         self.selectedImage = images[indexPath.item]
         collectionView.reloadData()
-    }
         
+        let indexPath = IndexPath(item: 0, section: 0)
+        collectionView.scrollToItem(at: indexPath, at: .bottom, animated: true)
+        
+    }
+    
     fileprivate func setupNavigationButtons(){
         navigationController?.navigationBar.tintColor = .black
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(handleCancel))
@@ -136,7 +144,9 @@ class PhotoSelectorController: UICollectionViewController, UICollectionViewDeleg
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Next", style: .plain, target: self, action: #selector(handleNext))
     }
     @objc func handleNext(){
-        print("handling next")
+        let sharePhotoController = SharePhotoController()
+        sharePhotoController.selectedImage = header?.photoImageView.image
+        navigationController?.pushViewController(sharePhotoController, animated: true)
     }
     
     @objc func handleCancel(){
