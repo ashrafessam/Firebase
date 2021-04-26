@@ -58,6 +58,12 @@ class HomeController: UICollectionViewController, UICollectionViewDelegateFlowLa
         return cell
     }
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.width, height: 200)
+        
+        var height: CGFloat = 40 + 8 + 8  //user profile imageView
+        height += view.frame.width
+        height += 50
+        height += 60
+        
+        return CGSize(width: view.frame.width, height: height)
     }
 }
