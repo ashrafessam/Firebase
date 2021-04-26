@@ -8,6 +8,8 @@
 import UIKit
 import Firebase
 
+
+
 class HomeController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
     let cellId = "cellId"
@@ -24,32 +26,27 @@ class HomeController: UICollectionViewController, UICollectionViewDelegateFlowLa
     var posts = [Post]()
     fileprivate func fetchPosts(){
         guard let uid = FirebaseAuth.Auth.auth().currentUser?.uid else { return }
-        
-        FirebaseDatabase.Database.database().reference().child("users").child(uid).observeSingleEvent(of: .value) { (snapchot) in
+        Database.fetchUserWithUid(uid: uid) { (user) in
+            self.fetchPostsWithUser(user: user)
+        }
+    }
+    
+    fileprivate func fetchPostsWithUser(user: User){
+        let ref = FirebaseDatabase.Database.database().reference().child("posts").child(user.uid)
+        ref.observe(.value) { (snapchot) in
             
-            guard let userDictionary = snapchot.value as? [String:Any] else {return}
+            guard let dictionaries = snapchot.value as? [String: Any] else { return }
             
-            let user = User(dictionary: userDictionary)
-            
-            let ref = FirebaseDatabase.Database.database().reference().child("posts").child(uid)
-            ref.observe(.value) { (snapchot) in
+            dictionaries.forEach { (key, value) in
                 
-                guard let dictionaries = snapchot.value as? [String: Any] else { return }
+                guard let dictionary = value as? [String: Any] else { return }
                 
-                dictionaries.forEach { (key, value) in
-                    
-                    guard let dictionary = value as? [String: Any] else { return }
-                    
-                    let post = Post(user: user, dictionary: dictionary)
-                    self.posts.append(post)
-                }
-                self.collectionView.reloadData()
-            } withCancel: { (error) in
-                print("Failed to fetch posts: ", error)
+                let post = Post(user: user, dictionary: dictionary)
+                self.posts.append(post)
             }
-            
+            self.collectionView.reloadData()
         } withCancel: { (error) in
-            print("Failed to fetch user for post: ", error)
+            print("Failed to fetch posts: ", error)
         }
     }
     
