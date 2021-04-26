@@ -21,7 +21,6 @@ class UserProfileController: UICollectionViewController, UICollectionViewDelegat
         collectionView.register(UserProfilePhotoCell.self, forCellWithReuseIdentifier: cellId)
         setuupLogoutButton()
         
-//        fetchPosts()
         
         fetchOrderdPosts()
     }
@@ -33,8 +32,11 @@ class UserProfileController: UICollectionViewController, UICollectionViewDelegat
         ref.queryOrdered(byChild: "creationDate").observe(.childAdded) { (snapchot) in
             
             guard let dictionary = snapchot.value as? [String: Any] else { return }
-            let post = Post(dictionary: dictionary)
-            self.posts.append(post)
+            
+            guard let user = self.user else {return}
+            
+            let post = Post(user: user, dictionary: dictionary)
+            self.posts.insert(post, at: 0)
             
             self.collectionView.reloadData()
             
@@ -46,27 +48,6 @@ class UserProfileController: UICollectionViewController, UICollectionViewDelegat
     }
     
     var posts = [Post]()
-    fileprivate func fetchPosts(){
-        guard let uid = FirebaseAuth.Auth.auth().currentUser?.uid else { return }
-        
-        let ref = FirebaseDatabase.Database.database().reference().child("posts").child(uid)
-        ref.observe(.value) { (snapchot) in
-            
-            guard let dictionaries = snapchot.value as? [String: Any] else { return }
-            
-            dictionaries.forEach { (key, value) in
-                
-                guard let dictionary = value as? [String: Any] else { return }
-                
-                let post = Post(dictionary: dictionary)
-                self.posts.append(post)
-            }
-            self.collectionView.reloadData()
-        } withCancel: { (error) in
-            print("Failed to fetch posts: ", error)
-        }
-
-    }
     
     fileprivate func setuupLogoutButton(){
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(named: "settings")?.withRenderingMode(.alwaysOriginal), style: .plain, target: self, action: #selector(handleLogout))
@@ -138,12 +119,4 @@ class UserProfileController: UICollectionViewController, UICollectionViewDelegat
 }
 
 
-struct User {
-    let username: String
-    let profileImageUrl: String
-    
-    init(dictionary: [String: Any]) {
-        self.username = dictionary["username"] as? String ?? ""
-        self.profileImageUrl = dictionary["profileImageUrl"] as? String ?? ""
-    }
-}
+
