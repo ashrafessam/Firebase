@@ -51,7 +51,7 @@ class HomeController: UICollectionViewController, UICollectionViewDelegateFlowLa
     }
     
     fileprivate func setupNavigationItems(){
-        navigationItem.titleView = UIImageView(image: UIImage(named: "selectedUser"))
+        navigationItem.titleView = UIImageView(image: UIImage(named: "instagram"))
         
     }
     
