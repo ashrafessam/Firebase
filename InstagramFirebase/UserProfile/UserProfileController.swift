@@ -11,22 +11,24 @@ import Firebase
 class UserProfileController: UICollectionViewController, UICollectionViewDelegateFlowLayout{
     
     let cellId = "cellId"
+    var userId: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         collectionView.backgroundColor = .white
+        
         fetchUser()
+        
         collectionView.register(UserProfileHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "headerId")
         collectionView.register(UserProfilePhotoCell.self, forCellWithReuseIdentifier: cellId)
+        
         setuupLogoutButton()
-        
-        
-        fetchOrderdPosts()
+        //fetchOrderdPosts()
     }
     
     fileprivate func fetchOrderdPosts(){
-        guard let uid = FirebaseAuth.Auth.auth().currentUser?.uid else { return }
+        guard let uid = user?.uid else { return }
         let ref = FirebaseDatabase.Database.database().reference().child("posts").child(uid)
         
         ref.queryOrdered(byChild: "creationDate").observe(.childAdded) { (snapchot) in
@@ -105,12 +107,14 @@ class UserProfileController: UICollectionViewController, UICollectionViewDelegat
     
     var user: User?
     fileprivate func fetchUser(){
-        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
         
         Database.fetchUserWithUid(uid: uid) { (user) in
             self.user = user
-            self.navigationItem.title = self.user?.username
+//            self.navigationItem.title = self.user?.username
             self.collectionView.reloadData()
+            self.fetchOrderdPosts()
         }
     }
 }
