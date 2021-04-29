@@ -87,7 +87,7 @@ class SignUpController: UIViewController, UIImagePickerControllerDelegate, UINav
         let btn = UIButton(type: .system)
         btn.setTitle("Sign Up", for: .normal)
         btn.setTitleColor(.white, for: .normal)
-        btn.backgroundColor = UIColor.rgb(red: 149, green: 204, blue: 244)
+        btn.backgroundColor = UIColor.rgb(red: 17, green: 154, blue: 237)
         btn.layer.cornerRadius = 5
         btn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 14)
         btn.addTarget(self, action: #selector(handleSignUp), for: .touchUpInside)

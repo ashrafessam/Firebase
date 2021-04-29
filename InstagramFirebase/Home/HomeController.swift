@@ -32,6 +32,7 @@ class HomeController: UICollectionViewController, UICollectionViewDelegateFlowLa
     }
     
     fileprivate func fetchPostsWithUser(user: User){
+        self.posts.removeAll()
         let ref = FirebaseDatabase.Database.database().reference().child("posts").child(user.uid)
         ref.observe(.value) { (snapchot) in
             
