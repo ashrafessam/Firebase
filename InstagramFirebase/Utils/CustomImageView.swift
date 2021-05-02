@@ -14,7 +14,7 @@ class CustomImageView: UIImageView {
     var lastUrlUsedToLoadImage: String?
     
     func loadImage(urlString: String){
-        print("loading Image...")
+        self.image = nil    
         
         lastUrlUsedToLoadImage = urlString
         

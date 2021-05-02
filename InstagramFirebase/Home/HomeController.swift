@@ -15,12 +15,50 @@ class HomeController: UICollectionViewController, UICollectionViewDelegateFlowLa
     let cellId = "cellId"
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let name = SharePhotoController.updateFeedNotificationName
+        NotificationCenter.default.addObserver(self, selector: #selector(handleUpdateFeed), name: name, object: nil)
+        
         collectionView.backgroundColor = .white
         
         collectionView.register(HomePostCell.self, forCellWithReuseIdentifier: cellId)
         
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(handleRefreshControl), for: .valueChanged)
+        collectionView.refreshControl = refreshControl
+        
         setupNavigationItems()
+        fetchAllPosts()
+    }
+    
+    @objc func handleUpdateFeed(){
+        handleRefreshControl()
+    }
+    
+    @objc fileprivate func handleRefreshControl(){
+        fetchAllPosts()
+    }
+    
+    fileprivate func fetchAllPosts(){
+        posts.removeAll()
         fetchPosts()
+        fetchFollowingUserIds()
+    }
+    
+    fileprivate func fetchFollowingUserIds(){
+        guard let uid = FirebaseAuth.Auth.auth().currentUser?.uid else { return }
+        FirebaseDatabase.Database.database().reference().child("following").child(uid).observeSingleEvent(of: .value) { (snapchot) in
+            
+            
+            guard let userIdsDictionary = snapchot.value as? [String: Any] else { return }
+            userIdsDictionary.forEach { (key, value) in
+                Database.fetchUserWithUid(uid: key) { (user) in
+                    self.fetchPostsWithUser(user: user)
+                }
+            }
+        } withCancel: { (error) in
+            print("Failed to fetch following posts", error)
+        }
     }
     
     var posts = [Post]()
@@ -36,6 +74,7 @@ class HomeController: UICollectionViewController, UICollectionViewDelegateFlowLa
         let ref = FirebaseDatabase.Database.database().reference().child("posts").child(user.uid)
         ref.observe(.value) { (snapchot) in
             
+            self.collectionView.refreshControl?.endRefreshing()
             guard let dictionaries = snapchot.value as? [String: Any] else { return }
             
             dictionaries.forEach { (key, value) in
